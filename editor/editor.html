@@ -127,32 +127,84 @@
       display: flex;
       flex-direction: column;
       min-height: 0;
+      position: relative;
+    }
+
+    .code-editor {
+      flex: 1;
+      position: relative;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      overflow: hidden;
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    .code-editor:focus-within {
+      border-color: #C74634;
+      box-shadow: 0 0 0 3px rgba(199, 70, 52, 0.2);
     }
 
     textarea {
-      flex: 1;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       padding: 16px;
-      background: rgba(0, 0, 0, 0.5);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 6px;
-      color: #FFFFFF;
+      background: transparent;
+      border: none;
+      color: transparent;
+      caret-color: #FFFFFF;
       font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Consolas', monospace;
       font-size: 14px;
       line-height: 1.6;
       resize: none;
       tab-size: 2;
-      transition: all 0.2s ease;
+      white-space: pre;
+      overflow: auto;
+      z-index: 1;
     }
 
     textarea:focus {
       outline: none;
-      border-color: #C74634;
-      box-shadow: 0 0 0 3px rgba(199, 70, 52, 0.2);
     }
 
     textarea::placeholder {
       color: rgba(255, 255, 255, 0.4);
     }
+
+    .code-highlight {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      padding: 16px;
+      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Consolas', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+      white-space: pre;
+      overflow: auto;
+      pointer-events: none;
+      z-index: 0;
+      color: #FFFFFF;
+    }
+
+    /* Syntax highlighting colors - Vibrant JavaScript theme */
+    .token-keyword { color: #FF6B9D; font-weight: 600; }        /* Pink - keywords like function, const, let */
+    .token-control { color: #C678DD; font-weight: 600; }        /* Purple - if, else, for, while */
+    .token-string { color: #98C379; }                           /* Bright green - strings */
+    .token-comment { color: #7F848E; font-style: italic; }      /* Gray - comments */
+    .token-number { color: #D19A66; }                           /* Orange - numbers */
+    .token-boolean { color: #E5C07B; }                          /* Yellow - true, false, null */
+    .token-function { color: #61AFEF; font-weight: 500; }       /* Bright blue - function names */
+    .token-class { color: #E5C07B; font-weight: 600; }          /* Yellow - class names */
+    .token-operator { color: #56B6C2; }                         /* Cyan - operators */
+    .token-punctuation { color: #ABB2BF; }                      /* Light gray - brackets, parentheses */
+    .token-property { color: #E06C75; }                         /* Red - object properties */
+    .token-metadata { color: #FFB86C; font-weight: 500; }       /* Bright orange - userscript metadata */
+    .token-this { color: #E5C07B; font-style: italic; }         /* Yellow italic - this, super */
+    .token-builtin { color: #56B6C2; }                          /* Cyan - console, window, document */
 
     .hint {
       margin-top: 8px;
@@ -227,7 +279,9 @@
 
     <div class="form-group code-editor-wrapper">
       <label for="code">Script Code</label>
-      <textarea id="code" placeholder="// ==UserScript==
+      <div class="code-editor">
+        <div class="code-highlight" id="codeHighlight"></div>
+        <textarea id="code" spellcheck="false" placeholder="// ==UserScript==
 // @name         My Awesome Script
 // @match        https://example.com/*
 // @grant        GM_xmlhttpRequest
@@ -241,6 +295,7 @@
   console.log('Script running!');
 
 })();"></textarea>
+      </div>
       <div class="hint">
         Use <code>@match</code> or <code>@include</code> to specify which pages this script runs on<br>
         Use <code>@updateURL</code> or <code>@downloadURL</code> for automatic updates<br>
