@@ -9,6 +9,13 @@
 
 :root {
   font: 14px menu;
+  /* Oracle Theme Colors - Black, Red, White */
+  --oracle-red: #C74634;
+  --oracle-red-dark: #a33728;
+  --oracle-red-light: #e05742;
+  --oracle-black: #000000;
+  --oracle-white: #FFFFFF;
+
   --bg: var(--fill-0);
   --fg: var(--fill-15);
   --fill-0: #fff;
@@ -31,29 +38,31 @@
   --tooltip-color: white;
   --tooltip-bg: rgba(0,0,0,.8);
   --tooltip-border-color: transparent;
-  --focus-border-color: var(--fill-12);
+  --focus-border-color: var(--oracle-red);
   @media (prefers-color-scheme: dark) {
-    --fg: var(--fill-11);
-    --fill-0: #1e1e1e;
-    --fill-0-5: #262626;
-    --fill-1: #2d2d2d; // step = 0x0F
-    --fill-2: #3c3c3c;
-    --fill-3: #4b4b4b;
-    --fill-4: #5a5a5a;
-    --fill-5: #696969;
-    --fill-6: #787878;
-    --fill-7: #878787;
-    --fill-8: #969696;
-    --fill-9: #a5a5a5;
-    --fill-10: #b4b4b4;
-    --fill-11: #c3c3c3;
-    --fill-12: #d2d2d2;
-    --fill-13: #e1e1e1;
+    --bg: var(--oracle-black);
+    --fg: var(--oracle-white);
+    --fill-0: #0a0a0a;
+    --fill-0-5: #121212;
+    --fill-1: #1a1a1a;
+    --fill-2: #222222;
+    --fill-3: #2a2a2a;
+    --fill-4: #333333;
+    --fill-5: #3d3d3d;
+    --fill-6: #474747;
+    --fill-7: #515151;
+    --fill-8: #5b5b5b;
+    --fill-9: #666666;
+    --fill-10: #707070;
+    --fill-11: #c0c0c0;
+    --fill-12: #d0d0d0;
+    --fill-13: #e0e0e0;
     --fill-14: #f0f0f0;
     --fill-15: #ffffff;
-    --tooltip-border-color: #8888;
-    --scrollbar-bg: #1a1a1a;
+    --tooltip-border-color: var(--oracle-red);
+    --scrollbar-bg: #0a0a0a;
     --input-bg: #111;
+    --focus-border-color: var(--oracle-red-light);
   }
 }
 
@@ -88,10 +97,10 @@ h1, h2, h3 {
   margin-bottom: .5em;
 }
 a {
-  color: dodgerblue;
+  color: var(--oracle-red);
   text-decoration: none;
   @media (prefers-color-scheme: dark) {
-    color: #7baaff;
+    color: var(--oracle-red-light);
   }
   &:focus,
   &:hover {
@@ -236,7 +245,10 @@ button,
   }
 }
 .btn-danger {
-  color: #f00;
+  color: var(--oracle-red);
+  &:hover {
+    color: var(--oracle-red-dark);
+  }
 }
 
 a[tabindex="0"] {

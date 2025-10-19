@@ -14,12 +14,13 @@ $findIconSize: 16px;
 $findIconML: calc($leftPaneWidth - $findIconSize - $iconMR);
 $footerHeight: 40px;
 
-$hoverColor: var(--bg);
-$hoverBack: cornflowerblue;
-$hoverButtonInactiveBack: #a0c1fd;
-$DARKhoverColor: var(--fill-15);
-$DARKhoverBack: #404c5c;
-$DARKhoverButtonInactiveBack: #5b6979;
+/* Oracle Theme Colors */
+$hoverColor: var(--oracle-white);
+$hoverBack: var(--oracle-red);
+$hoverButtonInactiveBack: var(--oracle-red-light);
+$DARKhoverColor: var(--oracle-white);
+$DARKhoverBack: var(--oracle-red-dark);
+$DARKhoverButtonInactiveBack: var(--oracle-red);
 
 html {
   scrollbar-width: none; /* Vivaldi: preventing the full-body scrollbar before size-adjustment kicks in */
@@ -209,9 +210,9 @@ footer {
   }
   &-group {
     padding-left: $findIconML;
-    color: #4a7792;
+    color: var(--oracle-red-dark);
     @media (prefers-color-scheme: dark) {
-      color: #eee;
+      color: var(--oracle-red-light);
     }
     & [data-totals]::after {
       content: ": " attr(data-totals);
@@ -343,8 +344,8 @@ footer {
       padding-bottom: .75rem;
     }
     &:focus {
-      color: var(--bg);
-      background: cornflowerblue;
+      color: var(--oracle-white);
+      background: var(--oracle-red);
     }
   }
 }

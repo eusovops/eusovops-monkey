@@ -67,7 +67,7 @@ aside {
   }
 }
 .text-red {
-  color: red;
+  color: var(--oracle-red);
 }
 .text-upper {
   text-transform: uppercase;
@@ -184,11 +184,11 @@ textarea:not([rows="1"]):not(.h100) {
 }
 
 .bright {
-  --hbg: bisque;
+  --hbg: var(--oracle-red-light);
 }
 
 @media (prefers-color-scheme: dark) {
   .bright {
-    --hbg: #880088; /* active badge color */
+    --hbg: var(--oracle-red); /* active badge color */
   }
 }
