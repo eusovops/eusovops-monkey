@@ -432,17 +432,61 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           break;
 
         case 'fetchUserscript':
-          try {
-            const response = await fetch(message.url);
-            if (!response.ok) {
-              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          (async () => {
+            try {
+              console.log('Fetching userscript from:', message.url);
+              // Try direct fetch first (works for most URLs)
+              const response = await fetch(message.url);
+              if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+              }
+              const code = await response.text();
+              console.log('Successfully fetched script, length:', code.length);
+              sendResponse({ success: true, code });
+            } catch (error) {
+              console.error('Direct fetch failed:', error.message);
+              // Fallback: Open URL in background tab and extract content
+              try {
+                const tab = await chrome.tabs.create({
+                  url: message.url,
+                  active: false
+                });
+
+                // Wait for tab to load
+                await new Promise(resolve => {
+                  chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
+                    if (tabId === tab.id && info.status === 'complete') {
+                      chrome.tabs.onUpdated.removeListener(listener);
+                      resolve();
+                    }
+                  });
+                });
+
+                // Extract content
+                const result = await chrome.scripting.executeScript({
+                  target: { tabId: tab.id },
+                  func: () => document.body.innerText || document.body.textContent || document.documentElement.innerText
+                });
+
+                // Close tab
+                await chrome.tabs.remove(tab.id);
+
+                if (result && result[0] && result[0].result) {
+                  console.log('Successfully extracted script from tab');
+                  sendResponse({ success: true, code: result[0].result });
+                } else {
+                  throw new Error('Could not extract script content from page');
+                }
+              } catch (fallbackError) {
+                console.error('Fallback failed:', fallbackError);
+                sendResponse({
+                  success: false,
+                  error: `Failed to load script. Original error: ${error.message}. Fallback error: ${fallbackError.message}`
+                });
+              }
             }
-            const code = await response.text();
-            sendResponse({ success: true, code });
-          } catch (error) {
-            sendResponse({ success: false, error: error.message });
-          }
-          break;
+          })();
+          return true; // Will respond asynchronously
 
         case 'activateScripts':
           try {
