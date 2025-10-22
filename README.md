@@ -25,7 +25,7 @@ EuSovOps-Monkey is a custom userscript manager built for Chrome with full Manife
 2. Open Chrome and go to `chrome://extensions/`
 3. Enable "Developer mode" (toggle in top-right)
 4. Click "Load unpacked"
-5. Select the `EuSovOps-Monkey-Built` folder
+5. Select the extension folder containing all directories (background, content, editor, icons, install, popup)
 6. Done! The extension is now installed
 
 ## Usage
@@ -76,13 +76,29 @@ EuSovOps-Monkey is a custom userscript manager built for Chrome with full Manife
 - **Storage:** chrome.storage.local for script persistence
 - **Injection:** chrome.scripting.executeScript with world: 'MAIN'
 
+## Build Instructions
+
+To create a release ZIP for Chrome Web Store:
+
+```bash
+zip -r EuSovOps-Monkey-release.zip manifest.json background/ content/ editor/ icons/ install/ popup/ -x "*.DS_Store"
+```
+
+**Important:** Always include the `install/` folder - it's required for userscript installation from web pages!
+
 ## Version
 
-Current version: 1.2.0
+Current version: 1.2.3
 
-### What's New in 1.2.0
+### What's New in 1.2.3
+- 🔧 Fixed Chrome Web Store permission violations
+- 🔧 Removed unnecessary 'webRequest' and 'tabs' permissions
+- 🔧 Fixed userscript installation from web pages
+- ✅ All permissions now properly justified and used
+
+### Previous Updates (1.2.0-1.2.2)
 - 🎨 Modern futuristic purple gradient UI
-- 🎨 GitHub-style dark theme editor
+- 🎨 GitHub-style dark theme editor with syntax highlighting
 - 🔗 Automatic .user.js URL detection and installation
 - 🔄 Automatic update checking (every 6 hours + on startup)
 - ✅ Fixed delete functionality with custom modal
