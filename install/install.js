@@ -15,21 +15,19 @@ async function init() {
     return;
   }
 
-  try {
-    // Fetch the script
-    const response = await fetch(scriptUrl);
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+  // Fetch through background service worker to avoid CORS issues
+  chrome.runtime.sendMessage({
+    action: 'fetchUserscript',
+    url: scriptUrl
+  }, (response) => {
+    if (response && response.success) {
+      scriptCode = response.code;
+      scriptMetadata = parseMetadata(scriptCode);
+      displayInstallPage();
+    } else {
+      showError(`Failed to load script: ${response?.error || 'Unknown error'}`);
     }
-
-    scriptCode = await response.text();
-    scriptMetadata = parseMetadata(scriptCode);
-
-    // Display the install page
-    displayInstallPage();
-  } catch (error) {
-    showError(`Failed to load script: ${error.message}`);
-  }
+  });
 }
 
 function parseMetadata(code) {

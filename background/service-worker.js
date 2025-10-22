@@ -339,7 +339,7 @@ async function injectScripts(tabId, url) {
   }
 }
 
-// Intercept .user.js URLs and redirect to install page
+// Intercept .user.js URLs and redirect to install page (works with activeTab)
 chrome.webNavigation.onBeforeNavigate.addListener((details) => {
   if (details.frameId === 0) { // Main frame only
     const url = details.url;
@@ -426,6 +426,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             const name = metadata.name ? metadata.name[0] : 'Unnamed Script';
             const newScript = await storage.addScript({ name, code });
             sendResponse({ success: true, data: newScript });
+          } catch (error) {
+            sendResponse({ success: false, error: error.message });
+          }
+          break;
+
+        case 'fetchUserscript':
+          try {
+            const response = await fetch(message.url);
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            const code = await response.text();
+            sendResponse({ success: true, code });
           } catch (error) {
             sendResponse({ success: false, error: error.message });
           }
