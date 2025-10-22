@@ -108,7 +108,7 @@ function displayInstallPage() {
   `;
 
   // Add event listeners
-  document.getElementById('cancelBtn').addEventListener('click', goBack);
+  document.getElementById('cancelBtn').addEventListener('click', closeTab);
   document.getElementById('installBtn').addEventListener('click', installScript);
 }
 
@@ -172,10 +172,14 @@ function showSuccess() {
 
 function showError(message) {
   const container = document.getElementById('container');
+  // Check if it's a duplicate script error
+  const isDuplicateError = message && message.includes('already exists');
+  const errorTitle = isDuplicateError ? 'Script Already Installed' : 'Failed to load userscript';
+
   container.innerHTML = `
     <div class="header">
-      <h1>❌ Error</h1>
-      <p>Failed to load userscript</p>
+      <h1>${isDuplicateError ? '⚠️' : '❌'} Error</h1>
+      <p>${errorTitle}</p>
     </div>
 
     <div class="content">
@@ -184,10 +188,18 @@ function showError(message) {
       </div>
 
       <div class="actions">
-        <button class="btn-cancel" onclick="goBack()">Go Back</button>
+        <button class="btn-cancel" onclick="closeTab()">Close</button>
       </div>
     </div>
   `;
+}
+
+function closeTab() {
+  // Try to close the tab
+  chrome.runtime.sendMessage({ action: 'closeCurrentTab' }, () => {
+    // Fallback to window.close if message fails
+    window.close();
+  });
 }
 
 function goBack() {

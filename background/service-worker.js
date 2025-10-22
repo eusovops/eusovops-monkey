@@ -494,6 +494,25 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           })();
           return true; // Will respond asynchronously
 
+        case 'closeCurrentTab':
+          try {
+            // Close the tab that sent the message
+            if (sender.tab && sender.tab.id) {
+              await chrome.tabs.remove(sender.tab.id);
+              sendResponse({ success: true });
+            } else {
+              // Fallback to current active tab
+              const [currentTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+              if (currentTab && currentTab.id) {
+                await chrome.tabs.remove(currentTab.id);
+              }
+              sendResponse({ success: true });
+            }
+          } catch (error) {
+            sendResponse({ success: false, error: error.message });
+          }
+          break;
+
         case 'activateScripts':
           try {
             const result = await activateScriptsOnCurrentTab();
