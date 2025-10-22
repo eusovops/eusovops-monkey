@@ -172,29 +172,6 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-// Activate Scripts button (ActiveTab mode)
-document.getElementById('activateBtn').addEventListener('click', async () => {
-  const activateBtn = document.getElementById('activateBtn');
-  activateBtn.disabled = true;
-  activateBtn.textContent = 'Activating...';
-
-  chrome.runtime.sendMessage({ action: 'activateScripts' }, (response) => {
-    if (response && response.success) {
-      activateBtn.textContent = '✅ Activated';
-      setTimeout(() => {
-        activateBtn.textContent = '▶️ Activate';
-        activateBtn.disabled = false;
-      }, 2000);
-    } else {
-      activateBtn.textContent = '❌ Failed';
-      setTimeout(() => {
-        activateBtn.textContent = '▶️ Activate';
-        activateBtn.disabled = false;
-      }, 2000);
-    }
-  });
-});
-
 // New Script button
 document.getElementById('newScript').addEventListener('click', () => {
   const url = chrome.runtime.getURL('editor/editor.html');

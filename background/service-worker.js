@@ -273,14 +273,10 @@ const GM_API_CODE = `
     });
   };
 
-  // MINIMAL VERSION: GM_notification disabled to reduce permissions
-  // window.GM_notification = function(details) {
-  //   const text = typeof details === 'string' ? details : details.text;
-  //   const title = typeof details === 'object' ? details.title : 'EuSovOps-Monkey';
-  //   sendBridgeMessage('GM_notification', { title, message: text });
-  // };
   window.GM_notification = function(details) {
-    console.log('[EuSovOps-Monkey] GM_notification called but notifications are disabled in minimal version');
+    const text = typeof details === 'string' ? details : details.text;
+    const title = typeof details === 'object' ? details.title : 'EuSovOps-Monkey';
+    sendBridgeMessage('GM_notification', { title, message: text });
   };
 
   window.GM_info = {
@@ -359,13 +355,22 @@ chrome.webNavigation.onBeforeNavigate.addListener((details) => {
   ]
 });
 
-// ACTIVE TAB MODE: Scripts are injected when user clicks extension icon
-// Navigation listener disabled for activeTab mode
-// chrome.webNavigation.onCommitted.addListener(async (details) => {
-//   if (details.frameId === 0) { // Main frame only
-//     await injectScripts(details.tabId, details.url);
-//   }
-// });
+// Listen for navigation events on Oracle domains
+chrome.webNavigation.onCommitted.addListener(async (details) => {
+  if (details.frameId === 0) { // Main frame only
+    await injectScripts(details.tabId, details.url);
+  }
+}, {
+  url: [
+    { hostContains: 'oracleiaas.com' },
+    { hostContains: 'eu-dcc-rome-1' },
+    { hostContains: 'eu-milan-2' },
+    { hostContains: 'eu-madrid-2' },
+    { hostContains: 'eu-frankfurt-2' },
+    { hostContains: 'oraclecorp.com' },
+    { hostContains: 'oraclerealm.eu' }
+  ]
+});
 
 // Message handler for popup and content scripts
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -667,10 +672,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           }
           break;
 
-        // MINIMAL VERSION: Notifications disabled
         case 'GM_notification':
-          console.log('[EuSovOps-Monkey] GM_notification received but notifications are disabled in minimal version');
-          sendResponse({ success: true });
+          try {
+            chrome.notifications.create({
+              type: 'basic',
+              iconUrl: chrome.runtime.getURL('icons/icon48.png'),
+              title: message.title || 'EuSovOps-Monkey',
+              message: message.message || ''
+            });
+            sendResponse({ success: true });
+          } catch (error) {
+            sendResponse({ success: false, error: error.message });
+          }
           break;
 
         default:
@@ -741,11 +754,11 @@ async function checkAllUpdates(force = false) {
   return updateCount;
 }
 
-// ACTIVE TAB MODE: Function to inject scripts on current tab
+// Function to manually inject scripts on current tab (kept for manual trigger if needed)
 async function activateScriptsOnCurrentTab() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (tab) {
-    console.log('Activating scripts for:', tab.url);
+    console.log('Manually activating scripts for:', tab.url);
     await injectScripts(tab.id, tab.url);
     return { success: true, url: tab.url };
   }
@@ -754,15 +767,14 @@ async function activateScriptsOnCurrentTab() {
 
 // Initialize
 chrome.runtime.onInstalled.addListener(() => {
-  console.log('EuSovOps-Monkey installed - ActiveTab Mode');
+  console.log('EuSovOps-Monkey installed - Oracle Internal Version');
 
-  // MINIMAL VERSION: Context menu disabled to reduce permissions
-  // chrome.contextMenus.create({
-  //   id: 'install-userscript',
-  //   title: 'Install with EuSovOps-Monkey',
-  //   contexts: ['link'],
-  //   targetUrlPatterns: ['*://*/*.user.js*']
-  // });
+  chrome.contextMenus.create({
+    id: 'install-userscript',
+    title: 'Install with EuSovOps-Monkey',
+    contexts: ['link'],
+    targetUrlPatterns: ['*://*/*.user.js*']
+  });
 
   // Check for updates on install
   checkAllUpdates();
