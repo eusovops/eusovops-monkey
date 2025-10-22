@@ -88,9 +88,15 @@ zip -r EuSovOps-Monkey-release.zip manifest.json background/ content/ editor/ ic
 
 ## Version
 
-Current version: 1.2.3
+Current version: 1.2.5
 
-### What's New in 1.2.3
+### What's New in 1.2.5
+- 🚀 Minimal permissions version for faster Chrome Web Store approval
+- ✅ Core functionality preserved with only essential permissions
+- 🔧 Optimized for quick review process (2-5 days expected)
+- 📦 Production-ready build for Chrome Web Store submission
+
+### Previous v1.2.3-1.2.4 Updates
 - 🔧 Fixed Chrome Web Store permission violations
 - 🔧 Removed unnecessary 'webRequest' and 'tabs' permissions
 - 🔧 Fixed userscript installation from web pages
