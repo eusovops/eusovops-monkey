@@ -1,0 +1,17 @@
+# macOS
+.DS_Store
+
+# Temporary directories
+temp-extract/
+test-v*/
+
+# Node modules
+node_modules/
+
+# Build artifacts
+*.zip
+
+# Other extensions or builds
+EuSovOps-Monkey/
+EuSovOps-Monkey-Extension/
+EuSovOps-Monkey-V3/

@@ -273,10 +273,14 @@ const GM_API_CODE = `
     });
   };
 
+  // MINIMAL VERSION: GM_notification disabled to reduce permissions
+  // window.GM_notification = function(details) {
+  //   const text = typeof details === 'string' ? details : details.text;
+  //   const title = typeof details === 'object' ? details.title : 'EuSovOps-Monkey';
+  //   sendBridgeMessage('GM_notification', { title, message: text });
+  // };
   window.GM_notification = function(details) {
-    const text = typeof details === 'string' ? details : details.text;
-    const title = typeof details === 'object' ? details.title : 'EuSovOps-Monkey';
-    sendBridgeMessage('GM_notification', { title, message: text });
+    console.log('[EuSovOps-Monkey] GM_notification called but notifications are disabled in minimal version');
   };
 
   window.GM_info = {
@@ -477,6 +481,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           }
           break;
 
+        case 'checkUpdatesNow':
+          try {
+            const count = await checkAllUpdates(true); // Force check
+            sendResponse({ success: true, count });
+          } catch (error) {
+            sendResponse({ success: false, error: error.message });
+          }
+          break;
+
         // GM API handlers
         case 'GM_xmlhttpRequest':
           try {
@@ -562,18 +575,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           }
           break;
 
+        // MINIMAL VERSION: Notifications disabled
         case 'GM_notification':
-          try {
-            chrome.notifications.create({
-              type: 'basic',
-              iconUrl: chrome.runtime.getURL('icons/icon48.png'),
-              title: message.title || 'EuSovOps-Monkey',
-              message: message.message || ''
-            });
-            sendResponse({ success: true });
-          } catch (error) {
-            sendResponse({ success: false, error: error.message });
-          }
+          console.log('[EuSovOps-Monkey] GM_notification received but notifications are disabled in minimal version');
+          sendResponse({ success: true });
           break;
 
         default:
@@ -588,7 +593,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 // Check for script updates
-async function checkAllUpdates() {
+async function checkAllUpdates(force = false) {
+  // Check if auto-update is enabled (unless forced)
+  if (!force) {
+    const result = await chrome.storage.local.get(['autoUpdateEnabled']);
+    const autoUpdateEnabled = result.autoUpdateEnabled !== false; // Default to true
+
+    if (!autoUpdateEnabled) {
+      console.log('Auto-update is disabled. Skipping update check.');
+      return 0;
+    }
+  }
+
   console.log('Checking for script updates...');
   const scripts = await storage.getScripts();
   let updateCount = 0;
@@ -619,28 +635,31 @@ async function checkAllUpdates() {
   }
 
   if (updateCount > 0) {
-    chrome.notifications.create({
-      type: 'basic',
-      iconUrl: chrome.runtime.getURL('icons/icon48.png'),
-      title: 'EuSovOps-Monkey',
-      message: `Updated ${updateCount} script(s) automatically!`
-    });
+    // MINIMAL VERSION: Notifications disabled
+    console.log(`[EuSovOps-Monkey] Updated ${updateCount} script(s) automatically!`);
+    // chrome.notifications.create({
+    //   type: 'basic',
+    //   iconUrl: chrome.runtime.getURL('icons/icon48.png'),
+    //   title: 'EuSovOps-Monkey',
+    //   message: `Updated ${updateCount} script(s) automatically!`
+    // });
   }
 
   console.log(`Update check complete. ${updateCount} script(s) updated.`);
+  return updateCount;
 }
 
 // Initialize
 chrome.runtime.onInstalled.addListener(() => {
   console.log('EuSovOps-Monkey installed');
 
-  // Create context menu for installing scripts from links
-  chrome.contextMenus.create({
-    id: 'install-userscript',
-    title: 'Install with EuSovOps-Monkey',
-    contexts: ['link'],
-    targetUrlPatterns: ['*://*/*.user.js*']
-  });
+  // MINIMAL VERSION: Context menu disabled to reduce permissions
+  // chrome.contextMenus.create({
+  //   id: 'install-userscript',
+  //   title: 'Install with EuSovOps-Monkey',
+  //   contexts: ['link'],
+  //   targetUrlPatterns: ['*://*/*.user.js*']
+  // });
 
   // Check for updates on install
   checkAllUpdates();
@@ -652,38 +671,38 @@ chrome.runtime.onStartup.addListener(() => {
   checkAllUpdates();
 });
 
-// Check for updates periodically (every 6 hours)
-chrome.alarms.create('checkUpdates', { periodInMinutes: 360 });
-chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name === 'checkUpdates') {
-    checkAllUpdates();
-  }
-});
+// MINIMAL VERSION: Auto-update checking disabled to reduce permissions
+// chrome.alarms.create('checkUpdates', { periodInMinutes: 360 });
+// chrome.alarms.onAlarm.addListener((alarm) => {
+//   if (alarm.name === 'checkUpdates') {
+//     checkAllUpdates();
+//   }
+// });
 
-// Handle context menu clicks
-chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-  if (info.menuItemId === 'install-userscript') {
-    try {
-      const response = await fetch(info.linkUrl);
-      const code = await response.text();
-      const metadata = parseMetadata(code);
-      const name = metadata.name ? metadata.name[0] : 'Unnamed Script';
-      await storage.addScript({ name, code, installURL: info.linkUrl });
-
-      // Show notification
-      chrome.notifications.create({
-        type: 'basic',
-        iconUrl: chrome.runtime.getURL('icons/icon48.png'),
-        title: 'EuSovOps-Monkey',
-        message: `Script "${name}" installed successfully!`
-      });
-    } catch (error) {
-      chrome.notifications.create({
-        type: 'basic',
-        iconUrl: chrome.runtime.getURL('icons/icon48.png'),
-        title: 'EuSovOps-Monkey Error',
-        message: `Failed to install script: ${error.message}`
-      });
-    }
-  }
-});
+// MINIMAL VERSION: Context menu handler disabled
+// chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+//   if (info.menuItemId === 'install-userscript') {
+//     try {
+//       const response = await fetch(info.linkUrl);
+//       const code = await response.text();
+//       const metadata = parseMetadata(code);
+//       const name = metadata.name ? metadata.name[0] : 'Unnamed Script';
+//       await storage.addScript({ name, code, installURL: info.linkUrl });
+//
+//       // Show notification
+//       chrome.notifications.create({
+//         type: 'basic',
+//         iconUrl: chrome.runtime.getURL('icons/icon48.png'),
+//         title: 'EuSovOps-Monkey',
+//         message: `Script "${name}" installed successfully!`
+//       });
+//     } catch (error) {
+//       chrome.notifications.create({
+//         type: 'basic',
+//         iconUrl: chrome.runtime.getURL('icons/icon48.png'),
+//         title: 'EuSovOps-Monkey Error',
+//         message: `Failed to install script: ${error.message}`
+//       });
+//     }
+//   }
+// });
