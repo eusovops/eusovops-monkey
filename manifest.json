@@ -26,12 +26,10 @@
 
   "permissions": [
     "storage",
-    "tabs",
     "scripting",
     "webNavigation",
     "notifications",
     "contextMenus",
-    "webRequest",
     "alarms"
   ],
 
