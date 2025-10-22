@@ -339,18 +339,24 @@ async function injectScripts(tabId, url) {
   }
 }
 
-// Intercept .user.js URLs and redirect to install page (works with activeTab)
+// Intercept .user.js URLs and redirect to install page
 chrome.webNavigation.onBeforeNavigate.addListener((details) => {
   if (details.frameId === 0) { // Main frame only
     const url = details.url;
+    console.log('Navigation detected:', url);
 
     // Check if URL ends with .user.js
     if (url.match(/\.user\.js(\?.*)?$/i)) {
-      // Redirect to install page
+      console.log('Userscript detected, redirecting to install page');
+      // Immediately redirect to install page
       const installUrl = chrome.runtime.getURL(`install/install.html?url=${encodeURIComponent(url)}`);
       chrome.tabs.update(details.tabId, { url: installUrl });
     }
   }
+}, {
+  url: [
+    { urlMatches: '.*\\.user\\.js(\\?.*)?$' }
+  ]
 });
 
 // ACTIVE TAB MODE: Scripts are injected when user clicks extension icon
