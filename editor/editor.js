@@ -5,56 +5,95 @@ let currentScriptId = null;
 
 // Syntax highlighting function - Enhanced with more colors!
 function highlightCode(code) {
-  // Escape HTML
+  // Escape HTML first
   code = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
+  // Create a placeholder system to protect already-highlighted code
+  const placeholders = [];
+  let placeholderIndex = 0;
+
+  function createPlaceholder(content) {
+    const id = `__PLACEHOLDER_${placeholderIndex++}__`;
+    placeholders.push({ id, content });
+    return id;
+  }
+
+  function restorePlaceholders(text) {
+    placeholders.forEach(({ id, content }) => {
+      text = text.replace(new RegExp(id, 'g'), content);
+    });
+    return text;
+  }
+
   // Highlight userscript metadata comments (FIRST - highest priority)
-  code = code.replace(/(\/\/ @\w+.*)/g, '<span class="token-metadata">$1</span>');
+  code = code.replace(/(\/\/ @\w+.*)/g, (match) => {
+    return createPlaceholder(`<span class="token-metadata">${match}</span>`);
+  });
 
   // Highlight multi-line comments
-  code = code.replace(/(\/\*[\s\S]*?\*\/)/g, '<span class="token-comment">$1</span>');
+  code = code.replace(/(\/\*[\s\S]*?\*\/)/g, (match) => {
+    return createPlaceholder(`<span class="token-comment">${match}</span>`);
+  });
 
   // Highlight single-line comments (but not metadata)
-  code = code.replace(/(\/\/(?! @).*)/g, '<span class="token-comment">$1</span>');
+  code = code.replace(/(\/\/(?! @).*)/g, (match) => {
+    return createPlaceholder(`<span class="token-comment">${match}</span>`);
+  });
 
   // Highlight template literals (before regular strings)
-  code = code.replace(/(`(?:\\.|[^`\\])*`)/g, '<span class="token-string">$1</span>');
+  code = code.replace(/(`(?:\\.|[^`\\])*`)/g, (match) => {
+    return createPlaceholder(`<span class="token-string">${match}</span>`);
+  });
 
   // Highlight strings (double quotes)
-  code = code.replace(/("(?:\\.|[^"\\])*")/g, '<span class="token-string">$1</span>');
+  code = code.replace(/("(?:\\.|[^"\\])*")/g, (match) => {
+    return createPlaceholder(`<span class="token-string">${match}</span>`);
+  });
 
   // Highlight strings (single quotes)
-  code = code.replace(/('(?:\\.|[^'\\])*')/g, '<span class="token-string">$1</span>');
+  code = code.replace(/('(?:\\.|[^'\\])*')/g, (match) => {
+    return createPlaceholder(`<span class="token-string">${match}</span>`);
+  });
 
-  // Highlight numbers (including decimals and hex)
-  code = code.replace(/\b(0x[0-9a-fA-F]+|\d+\.?\d*)\b/g, '<span class="token-number">$1</span>');
+  // Highlight numbers (including decimals and hex) - PROTECT IMMEDIATELY
+  code = code.replace(/\b(0x[0-9a-fA-F]+|\d+\.?\d*)\b/g, (match) => {
+    return createPlaceholder(`<span class="token-number">${match}</span>`);
+  });
 
-  // Highlight booleans and special values
-  code = code.replace(/\b(true|false|null|undefined|NaN|Infinity)\b/g, '<span class="token-boolean">$1</span>');
+  // Highlight booleans and special values - PROTECT IMMEDIATELY
+  code = code.replace(/\b(true|false|null|undefined|NaN|Infinity)\b/g, (match) => {
+    return createPlaceholder(`<span class="token-boolean">${match}</span>`);
+  });
 
-  // Highlight 'this' and 'super' (special keywords)
-  code = code.replace(/\b(this|super)\b/g, '<span class="token-this">$1</span>');
+  // Highlight 'this' and 'super' (special keywords) - PROTECT IMMEDIATELY
+  code = code.replace(/\b(this|super)\b/g, (match) => {
+    return createPlaceholder(`<span class="token-this">${match}</span>`);
+  });
 
-  // Highlight built-in objects
+  // Highlight built-in objects - PROTECT IMMEDIATELY
   const builtins = ['console', 'window', 'document', 'localStorage', 'sessionStorage', 'Math', 'Date',
                     'Array', 'Object', 'String', 'Number', 'Boolean', 'RegExp', 'Error', 'JSON',
                     'Promise', 'Set', 'Map', 'WeakMap', 'WeakSet', 'Symbol', 'Proxy', 'Reflect'];
 
   builtins.forEach(builtin => {
     const regex = new RegExp(`\\b(${builtin})\\b`, 'g');
-    code = code.replace(regex, '<span class="token-builtin">$1</span>');
+    code = code.replace(regex, (match) => {
+      return createPlaceholder(`<span class="token-builtin">${match}</span>`);
+    });
   });
 
-  // Highlight control flow keywords (purple)
+  // Highlight control flow keywords (purple) - PROTECT IMMEDIATELY
   const controlKeywords = ['if', 'else', 'switch', 'case', 'default', 'for', 'while', 'do',
                           'break', 'continue', 'return', 'try', 'catch', 'finally', 'throw'];
 
   controlKeywords.forEach(keyword => {
     const regex = new RegExp(`\\b(${keyword})\\b`, 'g');
-    code = code.replace(regex, '<span class="token-control">$1</span>');
+    code = code.replace(regex, (match) => {
+      return createPlaceholder(`<span class="token-control">${match}</span>`);
+    });
   });
 
-  // Highlight declaration keywords (pink)
+  // Highlight declaration keywords (pink) - PROTECT IMMEDIATELY
   const declarationKeywords = ['function', 'const', 'let', 'var', 'class', 'extends', 'new',
                                'async', 'await', 'yield', 'import', 'export', 'from', 'default',
                                'static', 'get', 'set', 'typeof', 'instanceof', 'in', 'of',
@@ -62,32 +101,23 @@ function highlightCode(code) {
 
   declarationKeywords.forEach(keyword => {
     const regex = new RegExp(`\\b(${keyword})\\b`, 'g');
-    code = code.replace(regex, '<span class="token-keyword">$1</span>');
+    code = code.replace(regex, (match) => {
+      return createPlaceholder(`<span class="token-keyword">${match}</span>`);
+    });
   });
 
-  // Highlight class names (after 'class' or 'extends')
-  code = code.replace(/\b(?:class|extends)\s+([A-Z][a-zA-Z0-9_$]*)/g,
-    (match, className) => match.replace(className, `<span class="token-class">${className}</span>`));
-
-  // Highlight function names
-  code = code.replace(/\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(/g, '<span class="token-function">$1</span>(');
-
-  // Highlight object properties (after dot or colon)
-  code = code.replace(/\.([a-zA-Z_$][a-zA-Z0-9_$]*)/g, '.<span class="token-property">$1</span>');
-  code = code.replace(/\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:/g, '<span class="token-property">$1</span>:');
-
-  // Highlight operators
-  const operators = ['===', '!==', '==', '!=', '<=', '>=', '&&', '\\|\\|', '\\+\\+', '--',
-                    '\\+=', '-=', '\\*=', '/=', '%=', '&lt;&lt;', '&gt;&gt;', '&amp;&amp;',
-                    '\\?\\?', '=&gt;', '<', '>', '\\+', '-', '\\*', '/', '%', '=', '!', '\\?', ':'];
-
-  operators.forEach(op => {
-    const regex = new RegExp(`(${op})`, 'g');
-    code = code.replace(regex, '<span class="token-operator">$1</span>');
+  // Highlight function names - PROTECT IMMEDIATELY
+  code = code.replace(/\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(/g, (match, funcName) => {
+    return createPlaceholder(`<span class="token-function">${funcName}</span>`) + '(';
   });
 
-  // Highlight punctuation (brackets, parentheses, braces)
-  code = code.replace(/([{}[\]();,.])/g, '<span class="token-punctuation">$1</span>');
+  // Highlight object properties (after dot) - PROTECT IMMEDIATELY
+  code = code.replace(/\.([a-zA-Z_$][a-zA-Z0-9_$]*)\b/g, (match, propName) => {
+    return '.' + createPlaceholder(`<span class="token-property">${propName}</span>`);
+  });
+
+  // Restore all placeholders (comments and strings)
+  code = restorePlaceholders(code);
 
   return code;
 }
@@ -98,7 +128,9 @@ function updateHighlight() {
   const highlight = document.getElementById('codeHighlight');
   const code = textarea.value;
 
-  highlight.innerHTML = highlightCode(code);
+  const highlighted = highlightCode(code);
+  console.log('Highlighted code sample:', highlighted.substring(0, 200));
+  highlight.innerHTML = highlighted;
 
   // Sync scroll
   highlight.scrollTop = textarea.scrollTop;
@@ -190,6 +222,11 @@ async function saveScript() {
 
 // Event listeners
 document.getElementById('saveBtn').addEventListener('click', saveScript);
+
+document.getElementById('saveCloseBtn').addEventListener('click', async () => {
+  await saveScript();
+  window.close();
+});
 
 document.getElementById('cancelBtn').addEventListener('click', () => {
   window.close();

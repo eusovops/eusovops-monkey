@@ -353,12 +353,13 @@ chrome.webNavigation.onBeforeNavigate.addListener((details) => {
   }
 });
 
-// Listen for navigation events
-chrome.webNavigation.onCommitted.addListener(async (details) => {
-  if (details.frameId === 0) { // Main frame only
-    await injectScripts(details.tabId, details.url);
-  }
-});
+// ACTIVE TAB MODE: Scripts are injected when user clicks extension icon
+// Navigation listener disabled for activeTab mode
+// chrome.webNavigation.onCommitted.addListener(async (details) => {
+//   if (details.frameId === 0) { // Main frame only
+//     await injectScripts(details.tabId, details.url);
+//   }
+// });
 
 // Message handler for popup and content scripts
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -425,6 +426,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             const name = metadata.name ? metadata.name[0] : 'Unnamed Script';
             const newScript = await storage.addScript({ name, code });
             sendResponse({ success: true, data: newScript });
+          } catch (error) {
+            sendResponse({ success: false, error: error.message });
+          }
+          break;
+
+        case 'activateScripts':
+          try {
+            const result = await activateScriptsOnCurrentTab();
+            sendResponse(result);
           } catch (error) {
             sendResponse({ success: false, error: error.message });
           }
@@ -649,9 +659,20 @@ async function checkAllUpdates(force = false) {
   return updateCount;
 }
 
+// ACTIVE TAB MODE: Function to inject scripts on current tab
+async function activateScriptsOnCurrentTab() {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (tab) {
+    console.log('Activating scripts for:', tab.url);
+    await injectScripts(tab.id, tab.url);
+    return { success: true, url: tab.url };
+  }
+  return { success: false, error: 'No active tab found' };
+}
+
 // Initialize
 chrome.runtime.onInstalled.addListener(() => {
-  console.log('EuSovOps-Monkey installed');
+  console.log('EuSovOps-Monkey installed - ActiveTab Mode');
 
   // MINIMAL VERSION: Context menu disabled to reduce permissions
   // chrome.contextMenus.create({

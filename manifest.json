@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "EuSovOps-Monkey",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "description": "EuSovOps internal userscript manager - run custom JavaScript on any website",
   "author": "Marius Bugaciu @ EUSOVOPS",
 
@@ -27,34 +27,11 @@
   "permissions": [
     "storage",
     "scripting",
-    "webNavigation"
+    "webNavigation",
+    "activeTab"
   ],
 
-  "host_permissions": [
-    "<all_urls>"
-  ],
 
-  "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": ["content/content.js"],
-      "run_at": "document_start",
-      "all_frames": true
-    },
-    {
-      "matches": ["<all_urls>"],
-      "js": ["content/install-detector.js"],
-      "run_at": "document_end",
-      "all_frames": false
-    }
-  ],
-
-  "web_accessible_resources": [
-    {
-      "resources": [],
-      "matches": ["<all_urls>"]
-    }
-  ],
 
   "minimum_chrome_version": "88"
 }

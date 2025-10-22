@@ -172,6 +172,29 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+// Activate Scripts button (ActiveTab mode)
+document.getElementById('activateBtn').addEventListener('click', async () => {
+  const activateBtn = document.getElementById('activateBtn');
+  activateBtn.disabled = true;
+  activateBtn.textContent = 'Activating...';
+
+  chrome.runtime.sendMessage({ action: 'activateScripts' }, (response) => {
+    if (response && response.success) {
+      activateBtn.textContent = '✅ Activated';
+      setTimeout(() => {
+        activateBtn.textContent = '▶️ Activate';
+        activateBtn.disabled = false;
+      }, 2000);
+    } else {
+      activateBtn.textContent = '❌ Failed';
+      setTimeout(() => {
+        activateBtn.textContent = '▶️ Activate';
+        activateBtn.disabled = false;
+      }, 2000);
+    }
+  });
+});
+
 // New Script button
 document.getElementById('newScript').addEventListener('click', () => {
   const url = chrome.runtime.getURL('editor/editor.html');
@@ -230,35 +253,52 @@ document.getElementById('installFile').addEventListener('change', async (e) => {
   e.target.value = '';
 });
 
-// Check Updates
-document.getElementById('checkUpdates').addEventListener('click', async () => {
-  const btn = document.getElementById('checkUpdates');
-  btn.textContent = 'Checking...';
-  btn.disabled = true;
+// Auto-Update Toggle
+async function loadAutoUpdateSetting() {
+  const result = await chrome.storage.local.get(['autoUpdateEnabled']);
+  const autoUpdateEnabled = result.autoUpdateEnabled !== false; // Default to true
 
-  const response = await sendMessage('checkUpdates');
-
-  if (response.success && response.updates && response.updates.length > 0) {
-    const updateList = response.updates.map(u =>
-      `${u.name}: ${u.oldVersion} → ${u.newVersion}`
-    ).join('\n');
-
-    if (confirm(`Found ${response.updates.length} update(s):\n\n${updateList}\n\nApply all updates?`)) {
-      for (const update of response.updates) {
-        await sendMessage('applyUpdate', { id: update.id, code: update.code });
-      }
-      await loadScripts();
-      alert('All updates applied successfully!');
-    }
-  } else if (response.success) {
-    alert('All scripts are up to date!');
+  const toggle = document.getElementById('autoUpdateToggle');
+  if (autoUpdateEnabled) {
+    toggle.classList.add('active');
   } else {
-    alert('Failed to check updates: ' + response.error);
+    toggle.classList.remove('active');
   }
 
-  btn.textContent = 'Check Updates';
-  btn.disabled = false;
+  return autoUpdateEnabled;
+}
+
+async function setAutoUpdateSetting(enabled) {
+  await chrome.storage.local.set({ autoUpdateEnabled: enabled });
+
+  const toggle = document.getElementById('autoUpdateToggle');
+  if (enabled) {
+    toggle.classList.add('active');
+  } else {
+    toggle.classList.remove('active');
+  }
+}
+
+document.getElementById('autoUpdateToggle').addEventListener('click', async () => {
+  const currentSetting = await loadAutoUpdateSetting();
+  const newSetting = !currentSetting;
+
+  await setAutoUpdateSetting(newSetting);
+
+  if (newSetting) {
+    // Trigger immediate update check when enabling
+    const response = await sendMessage('checkUpdatesNow');
+    if (response.success && response.count > 0) {
+      alert(`Auto-update enabled! Updated ${response.count} script(s).`);
+      await loadScripts();
+    } else {
+      alert('Auto-update enabled! Scripts will be checked every 6 hours.');
+    }
+  } else {
+    alert('Auto-update disabled. Scripts will not be automatically updated.');
+  }
 });
 
-// Load scripts on popup open
+// Load scripts and auto-update setting on popup open
 loadScripts();
+loadAutoUpdateSetting();

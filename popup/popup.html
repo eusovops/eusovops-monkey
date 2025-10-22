@@ -42,6 +42,19 @@
       gap: 8px;
     }
 
+    #activateBtn {
+      background: linear-gradient(135deg, #4CAF50, #45a049);
+      color: white;
+      font-weight: 600;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.8; }
+      100% { opacity: 1; }
+    }
+
     .header button {
       background: rgba(255, 255, 255, 0.15);
       backdrop-filter: blur(10px);
@@ -276,6 +289,64 @@
       transform: translateY(-1px);
     }
 
+    .auto-update-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .auto-update-toggle:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .auto-update-toggle.active {
+      background: linear-gradient(135deg, #C74634 0%, #8B2F23 100%);
+      border-color: rgba(199, 70, 52, 0.5);
+      box-shadow: 0 2px 8px rgba(199, 70, 52, 0.3);
+    }
+
+    .toggle-label {
+      font-size: 13px;
+      font-weight: 500;
+      user-select: none;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 36px;
+      height: 20px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      transition: all 0.3s ease;
+    }
+
+    .auto-update-toggle.active .toggle-switch {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      background: white;
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .auto-update-toggle.active .toggle-switch::after {
+      left: 18px;
+    }
+
     .empty-state {
       padding: 60px 20px;
       text-align: center;
@@ -292,7 +363,13 @@
   <div class="header">
     <h1>EuSovOps-Monkey</h1>
     <div class="toolbar-buttons">
-      <button id="checkUpdates">🔄 Updates</button>
+      <button id="activateBtn" title="Activate scripts on current page">
+        ▶️ Activate
+      </button>
+      <div id="autoUpdateToggle" class="auto-update-toggle">
+        <span class="toggle-label">Auto-Update</span>
+        <div class="toggle-switch"></div>
+      </div>
       <button id="newScript">+ New Script</button>
     </div>
   </div>
