@@ -1,12 +1,10 @@
-# EuSovOps-Monkey
+# Maimuta
 
-**Userscript Manager for Chrome (Manifest V3)**
-
-Created by **Marius Bugaciu @ EUSOVOPS**
+**Load your personal scripts using Manifest V3**
 
 ## About
 
-EuSovOps-Monkey is a custom userscript manager built for Chrome with full Manifest V3 compliance. It's designed specifically for internal EUSOVOPS team use and supports all standard Greasemonkey/ViolentMonkey/TamperMonkey userscripts.
+Maimuta is a custom userscript manager built for Chrome with full Manifest V3 compliance. It supports all standard Greasemonkey/ViolentMonkey/TamperMonkey userscripts.
 
 ## Features
 

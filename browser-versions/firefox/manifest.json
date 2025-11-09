@@ -1,0 +1,60 @@
+{
+  "manifest_version": 2,
+  "name": "Maimuta",
+  "version": "1.4.0",
+  "description": "Load your personal scripts using Manifest V3",
+
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+
+  "browser_action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png"
+    },
+    "default_title": "Maimuta"
+  },
+
+  "background": {
+    "scripts": ["background/service-worker.js"],
+    "persistent": false
+  },
+
+  "permissions": [
+    "storage",
+    "tabs",
+    "webNavigation",
+    "notifications",
+    "contextMenus",
+    "<all_urls>"
+  ],
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/content.js"],
+      "run_at": "document_start",
+      "all_frames": true
+    },
+    {
+      "matches": ["*://*/*.user.js", "*://*/*.user.js?*"],
+      "js": ["content/install-detector.js"],
+      "run_at": "document_end",
+      "all_frames": false
+    }
+  ],
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "maimuta@extension.com",
+      "strict_min_version": "89.0",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    }
+  }
+}
